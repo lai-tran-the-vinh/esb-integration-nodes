@@ -3,28 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const FILE_PATH = path.join(__dirname, '../products.json');
 
-// Danh sách sản phẩm giả lập (Sau này cào từ DB Web về)
-// Danh sách sản phẩm KHỚP 100% với Database Dolibarr của mày
-// const products = [
-//     {
-//         id: 1,
-//         name: "Áo thun basic",
-//         price: 150000,
-//         img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80"
-//     },
-//     {
-//         id: 2,
-//         name: "Quần jean slimfit",
-//         price: 350000,
-//         img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80"
-//     },
-//     {
-//         id: 3,
-//         name: "Giày sneaker",
-//         price: 120000,
-//         img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80"
-//     }
-// ];
 
 
 // HÀM ĐỒNG BỘ: Kéo dữ liệu từ WSO2 về lưu thành file JSON

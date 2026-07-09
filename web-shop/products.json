@@ -5,7 +5,8 @@
     "name": "Áo thun basic",
     "price": 150000,
     "description": "",
-    "stock": 100
+    "stock": 100,
+    "img": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop"
   },
   {
     "id": 2,
@@ -13,7 +14,8 @@
     "name": "Quần jean slimfit",
     "price": 350000,
     "description": "",
-    "stock": 0
+    "stock": 0,
+    "img": ""
   },
   {
     "id": 3,
@@ -21,6 +23,7 @@
     "name": "Giày sneaker",
     "price": 120000,
     "description": "",
-    "stock": 0
+    "stock": 0,
+    "img": ""
   }
 ]
