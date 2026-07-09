@@ -1,40 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
+
 <head>
+    <meta charset="UTF-8">
     <title>Giỏ Hàng Của Mày</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, spacing: { '10': '10px', '15': '15px', '20': '20px', '30': '30px' } } }
+        }
+    </script>
 </head>
-<body style="font-family: Arial; padding: 20px;">
-    <h2>GIỎ HÀNG THANH TOÁN</h2>
-    <a href="/">&larr; Tiếp tục mua sắm</a>
-    <hr>
 
-    <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; margin-top: 10px;">
-        <thead>
-            <tr style="background: #f1f1f1;">
-                <th>Tên sản phẩm</th>
-                <th>Đơn giá</th>
-                <th>Số lượng</th>
-                <th>Thành tiền</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody id="cart-body">
-            </tbody>
-    </table>
-    <h3 style="text-align: right;">Tổng tiền: <span id="total-price" style="color: red;">0</span> VND</h3>
+<body class="bg-gray-100 text-gray-900 antialiased font-sans flex flex-col min-h-screen">
 
-    <hr>
-    <form action="/checkout" method="POST" id="checkout-form" style="max-width: 400px;">
-        <h3>Thông tin người mua:</h3>
-        <p>Họ tên: <input type="text" name="customer_name" required style="width: 100%; padding: 8px;"></p>
-        <p>Email: <input type="email" name="customer_email" required style="width: 100%; padding: 8px;"></p>
-        
-        <input type="hidden" name="cart_items" id="hidden_cart_items">
+    <header class="sticky top-0 bg-red-700 text-white z-10">
+        <div class="max-w-[1200px] mx-auto px-4 sm:px-8 py-4 flex justify-between items-center">
+            <div class="font-bold text-2xl tracking-tight">WSO2 Store</div>
+            <a href="/" class="text-sm font-medium text-red-100 hover:text-white transition-colors">&larr; Tiếp tục mua
+                sắm</a>
+        </div>
+    </header>
 
-        <button type="submit" style="background: #4CAF50; color: white; padding: 12px; width: 100%; border: none; font-size: 16px; font-weight: bold; cursor: pointer;">
-            THANH TOÁN VNPAY NGAY
-        </button>
-    </form>
+    <main class="flex-grow max-w-[1000px] mx-auto w-full px-4 sm:px-8 py-8">
+        <h1 class="text-2xl font-semibold tracking-tight mb-8">Giỏ Hàng Thanh Toán</h1>
+
+        <div class="bg-white rounded-lg overflow-x-auto mb-8">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100/50">
+                        <th class="py-3 px-4 text-sm font-medium text-gray-600">Tên sản phẩm</th>
+                        <th class="py-3 px-4 text-sm font-medium text-gray-600">Đơn giá</th>
+                        <th class="py-3 px-4 text-sm font-medium text-gray-600">Số lượng</th>
+                        <th class="py-3 px-4 text-sm font-medium text-gray-600">Thành tiền</th>
+                        <th class="py-3 px-4 text-sm font-medium text-gray-600">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-body">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex justify-end mb-10">
+            <h3 class="text-xl">Tổng tiền: <span id="total-price" class="font-bold text-red-700">0</span> VND</h3>
+        </div>
+
+        <div id="checkout-container" class="flex justify-end pt-10">
+            <form action="/checkout" method="POST" id="checkout-form"
+                class="w-full sm:max-w-md bg-white p-6 rounded-lg">
+                <h3 class="text-lg font-semibold mb-6">Thông tin người mua</h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
+                    <input type="text" name="customer_name" required placeholder="Nhập họ và tên"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="customer_email" required placeholder="Nhập địa chỉ email"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
+                </div>
+
+                <input type="hidden" name="cart_items" id="hidden_cart_items">
+
+                <button type="submit"
+                    class="w-full bg-red-700 text-white py-2.5 rounded-md text-sm font-medium hover:bg-red-800 transition-colors">
+                    Thanh toán VNPAY ngay
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <footer class="border-t border-gray-200 py-10 mt-auto bg-white">
+        <div class="max-w-[1200px] mx-auto px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg tracking-tight">WSO2 Store</span>
+                </div>
+                <p class="text-sm text-gray-500">
+                    Xây dựng trục liên thông dữ liệu phục vụ chia sẻ dữ liệu đa cấu trúc
+                </p>
+            </div>
+            <div
+                class="mt-8 border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+                <p>Thực tập tốt nghiệp.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <span>WSO2 Micro Integrator</span>
+                    <span class="hidden md:inline">&middot;</span>
+                    <span>Dolibarr ERP</span>
+                    <span class="hidden md:inline">&middot;</span>
+                    <span>InvoiceShelf</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
         let cart = JSON.parse(localStorage.getItem('my_cart')) || [];
@@ -42,19 +103,21 @@
         let total = 0;
 
         if (cart.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Giỏ hàng trống!</td></tr>';
-            document.getElementById('checkout-form').style.display = 'none';
+            tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-gray-500 font-medium">Giỏ hàng trống!</td></tr>';
+            document.getElementById('checkout-container').style.display = 'none';
         } else {
             cart.forEach((item, index) => {
                 let itemTotal = item.price * item.quantity;
                 total += itemTotal;
                 tbody.innerHTML += `
-                    <tr>
-                        <td><b>${item.name}</b></td>
-                        <td>${item.price.toLocaleString()}</td>
-                        <td>${item.quantity}</td>
-                        <td>${itemTotal.toLocaleString()}</td>
-                        <td><button onclick="removeItem(${index})" style="background:red; color:white; border:none; padding:5px 10px;">Xóa</button></td>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-4 px-4 font-medium text-gray-900">${item.name}</td>
+                        <td class="py-4 px-4 text-gray-600">${item.price.toLocaleString()}</td>
+                        <td class="py-4 px-4 text-gray-600">${item.quantity}</td>
+                        <td class="py-4 px-4 font-medium text-gray-900">${itemTotal.toLocaleString()}</td>
+                        <td class="py-4 px-4">
+                            <button onclick="removeItem(${index})" class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md text-sm font-medium transition-colors">Xóa</button>
+                        </td>
                     </tr>
                 `;
             });
@@ -68,7 +131,7 @@
         }
 
         // KHI BẤM SUBMIT FORM -> NHÉT MẢNG JSON VÀO INPUT ẨN
-        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        document.getElementById('checkout-form').addEventListener('submit', function (e) {
             if (cart.length === 0) {
                 e.preventDefault();
                 alert('Giỏ hàng trống!');
@@ -81,4 +144,5 @@
         });
     </script>
 </body>
+
 </html>

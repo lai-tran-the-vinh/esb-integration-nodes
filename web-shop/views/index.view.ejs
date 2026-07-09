@@ -5,49 +5,55 @@
     <meta charset="UTF-8">
     <title>Mua hàng WSO2</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        // Config nhanh CDN cho đúng ý spacing 1px của mày
         tailwind.config = {
-            theme: { extend: { spacing: { '10': '10px', '15': '15px', '20': '20px', '30': '30px', '400': '400px', '500': '500px' } } }
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
         }
     </script>
 </head>
 
-<body class="bg-gray-100 flex justify-center items-center h-screen">
+<body class="bg-gray-100 flex justify-center items-center min-h-screen font-sans text-gray-900 p-4">
 
-    <div class="bg-white p-30 rounded-lg shadow-md w-500">
-        <h1 class="text-xl font-bold mb-20 text-center">GIỎ HÀNG CỦA BẠN</h1>
+    <div class="bg-white p-8 sm:p-10 rounded-xl w-full max-w-[500px]">
+        <h1 class="text-2xl font-semibold mb-8 text-center tracking-tight">Giỏ hàng của bạn</h1>
 
-        <div class="border-b pb-15 mb-15 flex justify-between">
+        <div class="border-b border-gray-100 pb-6 mb-6 flex justify-between items-center">
             <div>
-                <p class="font-semibold">
+                <p class="font-medium text-lg">
                     <%= product.name %>
                 </p>
-                <p class="text-gray-500 text-sm">Số lượng: <%= product.qty %>
+                <p class="text-gray-500 text-sm mt-1">Số lượng: <%= product.qty %>
                 </p>
             </div>
-            <p class="font-bold text-red-600">
+            <p class="font-bold text-red-700 text-xl">
                 <%= product.price.toLocaleString() %> VND
             </p>
         </div>
 
-        <form action="/checkout" method="POST" class="flex flex-col gap-15">
+        <form action="/checkout" method="POST" class="flex flex-col gap-6">
             <input type="hidden" name="product_id" value="<%= product.id %>">
             <input type="hidden" name="quantity" value="<%= product.qty %>">
+            
             <div>
-                <label class="block text-sm font-medium mb-10">Họ/Tên Khách Hàng:</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Họ tên khách hàng</label>
                 <input type="text" name="customer_name" placeholder="Nhập họ và tên" required
-                    class="border w-full p-10 rounded">
+                    class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
             </div>
+            
             <div>
-                <label class="block text-sm font-medium mb-10">Email:</label>
-                <input type="email" name="customer_email" placeholder="Nhập email" required
-                    class="border w-full p-10 rounded">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" name="customer_email" placeholder="Nhập địa chỉ email" required
+                    class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
             </div>
 
-            <button type="submit" class="bg-blue-600 text-white font-bold p-15 rounded hover:bg-blue-700 mt-10">
-                THANH TOÁN VNPAY NGAY
+            <button type="submit" class="w-full bg-red-700 text-white py-3 rounded-md text-sm font-medium hover:bg-red-800 transition-colors mt-2">
+                Thanh toán VNPAY ngay
             </button>
+            
+            <a href="/" class="text-center text-sm font-medium text-gray-500 hover:text-red-700 transition-colors mt-2">
+                &larr; Quay lại cửa hàng
+            </a>
         </form>
     </div>
 

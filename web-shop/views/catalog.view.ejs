@@ -5,56 +5,117 @@
     <meta charset="UTF-8">
     <title>Cửa hàng WSO2</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
-            theme: { extend: { spacing: { '10': '10px', '15': '15px', '20': '20px', '30': '30px' } } }
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, spacing: { '10': '10px', '15': '15px', '20': '20px', '30': '30px' } } }
         }
     </script>
 </head>
 
-<body class="bg-gray-100 p-30">
+<body class="bg-gray-100 text-gray-900 antialiased font-sans flex flex-col min-h-screen">
 
-    <div class="max-w-[1200px] mx-auto">
-        <h1 class="text-2xl font-bold text-center mb-30 text-blue-600">DANH MỤC SẢN PHẨM</h1>
-        <div style="text-align: right; padding: 10px;">
+    <header class="sticky top-0 bg-red-700 text-white z-10">
+        <div class="max-w-[1200px] mx-auto px-8 py-4 flex justify-between items-center">
+            <div class="font-bold text-2xl tracking-tight">WSO2 Store</div>
             <a href="/cart"
-                style="background: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; font-weight: bold;">
-                Xem Giỏ Hàng (<span id="cart-count">0</span>)
+                class="bg-white text-red-700 px-5 py-2.5 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors">
+                Xem giỏ hàng (<span id="cart-count">0</span>)
             </a>
         </div>
+    </header>
 
+    <main class="flex-grow max-w-[1200px] mx-auto w-full px-8 py-8">
 
-
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-20">
-            <% products.forEach(function(prod) { %>
-                <% const isOutOfStock = (parseInt(prod.stock || 0) <= 0); %>
+        <div class="bg-white rounded-xl overflow-hidden mb-10 flex flex-col lg:flex-row min-h-[320px]">
+            <div class="p-10 flex flex-col justify-center lg:w-1/2 bg-gray-50/50">
                 <div
-                    class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col justify-between p-15 border hover:shadow-lg transition">
-                    <div>
-                        <img src="<%= prod.img %>" alt="<%= prod.name %>"
-                            class="w-full h-[200px] object-cover mb-15 rounded">
-                        <h2 class="font-bold text-lg mb-10">
-                            <%= prod.name %>
-                        </h2>
-                    </div>
-                    <div>
-                        <p class="text-red-600 font-bold text-xl mb-15">
-                            <%= prod.price.toLocaleString() %> VND
-                        </p>
-                        <button <%= isOutOfStock ? 'disabled' : '' %>  onclick="addToCart('<%= prod.id %>', '<%= prod.name %>', '<%= prod.price %>')"
-                            style="background: #2196F3; color: white; padding: 8px 12px; border: none; cursor: pointer;">
-                            <%= isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ' %>
-                        </button>
-                        <a href="<%= isOutOfStock ? '#' : '/checkout/' + prod.id %>"
-                            class="block text-center <%= isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' %> text-white font-bold p-10 rounded">
-                            <%= isOutOfStock ? 'Tạm hết hàng' : 'MUA NGAY' %>
-                        </a>
-                    </div>
+                    class="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-green-200 uppercase tracking-wide w-fit mb-6">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Status: ERP Online
                 </div>
-                <% }); %>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-4 leading-tight">
+                    Enterprise E-commerce
+                    <span class="text-red-700 block mt-1">Gateway API</span>
+                </h2>
+                <p class="text-gray-500 text-base mb-8 max-w-md">
+                    Hệ thống bán lẻ tích hợp đồng bộ dữ liệu định kỳ giữa WSO2 Micro Integrator và Dolibarr ERP.
+                </p>
+                <div>
+                    <a href="#"
+                        class="inline-flex justify-center items-center bg-red-700 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-red-800 transition-colors">
+                        Khám phá sản phẩm
+                    </a>
+                </div>
+            </div>
+            <div class="lg:w-1/2 relative bg-gray-100 min-h-[250px] lg:min-h-full">
+                <img src="https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=2070&auto=format&fit=crop"
+                    alt="Promotion Banner" class="absolute inset-0 w-full h-full object-cover">
+            </div>
         </div>
-    </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <% products.forEach(function(prod) { %>
+                <% const isOutOfStock=(parseInt(prod.stock || 0) <=0); %>
+                    <div
+                        class="bg-white rounded-lg transition-transform hover:-translate-y-1 overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <img src="<%= prod.img %>" alt="<%= prod.name %>"
+                                class="w-full h-[200px] object-cover bg-gray-100">
+                            <div class="p-5 pb-0">
+                                <h2 class="font-medium text-base line-clamp-2">
+                                    <%= prod.name %>
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="p-5 pt-4">
+                            <p class="text-red-700 font-bold mb-4">
+                                <%= prod.price.toLocaleString() %> VND
+                            </p>
+
+                            <div class="flex flex-col gap-2">
+                                <button <%=isOutOfStock ? 'disabled' : '' %> onclick="addToCart('<%= prod.id %>', '<%=
+                                            prod.name %>', '<%= prod.price %>')"
+                                                class="w-full text-center px-4 py-2 rounded-md text-sm font-normal
+                                                transition-colors <%= isOutOfStock
+                                                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200' %>">
+                                                    <%= isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ' %>
+                                </button>
+                                <a href="<%= isOutOfStock ? '#' : '/checkout/' + prod.id %>"
+                                    class="block w-full text-center px-4 py-2 rounded-md text-sm font-normal transition-colors <%= isOutOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-red-700 text-white hover:bg-red-800' %>">
+                                    <%= isOutOfStock ? 'Tạm hết hàng' : 'Mua ngay' %>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <% }); %>
+        </div>
+    </main>
+
+    <footer class="border-t border-gray-200 py-10 mt-auto bg-white">
+        <div class="max-w-[1200px] mx-auto px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg tracking-tight">WSO2 Store</span>
+                </div>
+                <p class="text-sm text-gray-500">
+                    Xây dựng trục liên thông dữ liệu phục vụ chia sẻ dữ liệu đa cấu trúc
+                </p>
+            </div>
+            <div
+                class="mt-8 border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+                <p>Thực tập tốt nghiệp.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <span>WSO2 Micro Integrator</span>
+                    <span class="hidden md:inline">&middot;</span>
+                    <span>Dolibarr ERP</span>
+                    <span class="hidden md:inline">&middot;</span>
+                    <span>InvoiceShelf</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 </body>
 <script>
