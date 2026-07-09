@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cửa hàng WSO2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { spacing: { '10': '10px', '15': '15px', '20': '20px', '30': '30px' } } }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 p-30">
+
+    <div class="max-w-[1200px] mx-auto">
+        <h1 class="text-2xl font-bold text-center mb-30 text-blue-600">DANH MỤC SẢN PHẨM</h1>
+        <div style="text-align: right; padding: 10px;">
+            <a href="/cart"
+                style="background: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; font-weight: bold;">
+                Xem Giỏ Hàng (<span id="cart-count">0</span>)
+            </a>
+        </div>
+
+
+
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-20">
+            <% products.forEach(function(prod) { %>
+                <% const isOutOfStock = (parseInt(prod.stock || 0) <= 0); %>
+                <div
+                    class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col justify-between p-15 border hover:shadow-lg transition">
+                    <div>
+                        <img src="<%= prod.img %>" alt="<%= prod.name %>"
+                            class="w-full h-[200px] object-cover mb-15 rounded">
+                        <h2 class="font-bold text-lg mb-10">
+                            <%= prod.name %>
+                        </h2>
+                    </div>
+                    <div>
+                        <p class="text-red-600 font-bold text-xl mb-15">
+                            <%= prod.price.toLocaleString() %> VND
+                        </p>
+                        <button <%= isOutOfStock ? 'disabled' : '' %>  onclick="addToCart('<%= prod.id %>', '<%= prod.name %>', '<%= prod.price %>')"
+                            style="background: #2196F3; color: white; padding: 8px 12px; border: none; cursor: pointer;">
+                            <%= isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ' %>
+                        </button>
+                        <a href="<%= isOutOfStock ? '#' : '/checkout/' + prod.id %>"
+                            class="block text-center <%= isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' %> text-white font-bold p-10 rounded">
+                            <%= isOutOfStock ? 'Tạm hết hàng' : 'MUA NGAY' %>
+                        </a>
+                    </div>
+                </div>
+                <% }); %>
+        </div>
+    </div>
+
+</body>
+<script>
+    // Đọc giỏ hàng từ localStorage ra, nếu chưa có thì tạo mảng rỗng
+    let cart = JSON.parse(localStorage.getItem('my_cart')) || [];
+    document.getElementById('cart-count').innerText = cart.length;
+
+    function addToCart(id, name, price) {
+        // Kiểm tra coi món này có trong giỏ chưa
+        let item = cart.find(i => i.product_id == id);
+        if (item) {
+            item.quantity += 1; // Có rồi thì tăng số lượng
+        } else {
+            cart.push({ product_id: id, name: name, price: Number(price), quantity: 1 });
+        }
+        // Lưu ngược lại vào localStorage
+        localStorage.setItem('my_cart', JSON.stringify(cart));
+        document.getElementById('cart-count').innerText = cart.length;
+        alert('Đã thêm "' + name + '" vào giỏ!');
+    }
+</script>
+
+</html>

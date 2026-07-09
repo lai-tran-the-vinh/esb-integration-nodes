@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "ref": "SP001",
+    "name": "Áo thun basic",
+    "price": 150000,
+    "description": "",
+    "stock": 100
+  },
+  {
+    "id": 2,
+    "ref": "SP002",
+    "name": "Quần jean slimfit",
+    "price": 350000,
+    "description": "",
+    "stock": 0
+  },
+  {
+    "id": 3,
+    "ref": "SP003",
+    "name": "Giày sneaker",
+    "price": 120000,
+    "description": "",
+    "stock": 0
+  }
+]

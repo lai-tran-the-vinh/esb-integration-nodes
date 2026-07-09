@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Giỏ Hàng Của Mày</title>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+    <h2>GIỎ HÀNG THANH TOÁN</h2>
+    <a href="/">&larr; Tiếp tục mua sắm</a>
+    <hr>
+
+    <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; margin-top: 10px;">
+        <thead>
+            <tr style="background: #f1f1f1;">
+                <th>Tên sản phẩm</th>
+                <th>Đơn giá</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="cart-body">
+            </tbody>
+    </table>
+    <h3 style="text-align: right;">Tổng tiền: <span id="total-price" style="color: red;">0</span> VND</h3>
+
+    <hr>
+    <form action="/checkout" method="POST" id="checkout-form" style="max-width: 400px;">
+        <h3>Thông tin người mua:</h3>
+        <p>Họ tên: <input type="text" name="customer_name" required style="width: 100%; padding: 8px;"></p>
+        <p>Email: <input type="email" name="customer_email" required style="width: 100%; padding: 8px;"></p>
+        
+        <input type="hidden" name="cart_items" id="hidden_cart_items">
+
+        <button type="submit" style="background: #4CAF50; color: white; padding: 12px; width: 100%; border: none; font-size: 16px; font-weight: bold; cursor: pointer;">
+            THANH TOÁN VNPAY NGAY
+        </button>
+    </form>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('my_cart')) || [];
+        const tbody = document.getElementById('cart-body');
+        let total = 0;
+
+        if (cart.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Giỏ hàng trống!</td></tr>';
+            document.getElementById('checkout-form').style.display = 'none';
+        } else {
+            cart.forEach((item, index) => {
+                let itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${item.name}</b></td>
+                        <td>${item.price.toLocaleString()}</td>
+                        <td>${item.quantity}</td>
+                        <td>${itemTotal.toLocaleString()}</td>
+                        <td><button onclick="removeItem(${index})" style="background:red; color:white; border:none; padding:5px 10px;">Xóa</button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('total-price').innerText = total.toLocaleString();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('my_cart', JSON.stringify(cart));
+            location.reload(); // Tải lại trang để cập nhật bảng
+        }
+
+        // KHI BẤM SUBMIT FORM -> NHÉT MẢNG JSON VÀO INPUT ẨN
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            if (cart.length === 0) {
+                e.preventDefault();
+                alert('Giỏ hàng trống!');
+                return;
+            }
+            // Biến mảng cart thành chuỗi JSON gán vào thẻ input hidden
+            document.getElementById('hidden_cart_items').value = JSON.stringify(cart);
+            // Xóa giỏ hàng sau khi đã gửi đi
+            localStorage.removeItem('my_cart');
+        });
+    </script>
+</body>
+</html>

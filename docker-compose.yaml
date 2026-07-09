@@ -1,0 +1,99 @@
+services:
+  # 1. Keycloak - Xác thực tập trung
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    command: start-dev
+    networks:
+      - esb-network
+
+  # 2. Directus - Kênh bán hàng (JSON)
+  directus:
+    image: directus/directus:latest
+    container_name: directus
+    environment:
+      KEY: 'random-string-change-this-123456'
+      SECRET: 'another-random-string-abc'
+      ADMIN_EMAIL: 'admin@example.com'
+      ADMIN_PASSWORD: 'admin123'
+      DB_CLIENT: 'sqlite3'
+      DB_FILENAME: '/directus/database/data.db'
+    ports:
+      - "1337:8055"
+    volumes:
+      - directus-data:/directus/database
+    networks:
+      - esb-network
+
+  # 3. Dolibarr - ERP (XML)
+  dolibarr:
+    image: dolibarr/dolibarr:latest
+    container_name: dolibarr
+    environment:
+      DOLI_DB_TYPE: mysqli
+      DOLI_DB_HOST: mysql-dolibarr
+      DOLI_DB_USER: root
+      DOLI_DB_PASSWORD: root
+      DOLI_DB_NAME: dolibarr
+      DOLI_ADMIN_LOGIN: admin
+      DOLI_ADMIN_PASSWORD: admin
+    ports:
+      - "8000:80"
+    depends_on:
+      mysql-dolibarr:
+        condition: service_healthy
+    volumes:
+      - dolibarr-data:/var/www/documents
+    networks:
+      - esb-network
+
+  mysql-dolibarr:
+    image: mysql:8
+    container_name: mysql-dolibarr
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dolibarr
+    volumes:
+      - mysql-dolibarr-data:/var/lib/mysql
+    networks:
+      - esb-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      timeout: 20s
+      retries: 10
+
+  # 4. Invoice Ninja - Hóa đơn (JSON)
+  invoiceshelf:
+    image: invoiceshelf/invoiceshelf:latest
+    container_name: invoiceshelf
+    environment:
+      APP_URL: http://localhost:8002
+      APP_DEBUG: "true"
+      APP_ENV: local
+      APP_KEY:   # Để trống, container sẽ tự gen
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/www/html/database/database.sqlite
+      MAIL_MAILER: log
+    ports:
+      - "8002:8080"
+    volumes:
+      - invoiceshelf-data:/var/www/html/storage
+      - invoiceshelf-db:/var/www/html/database
+    networks:
+      - esb-network
+
+networks:
+  esb-network:
+    driver: bridge
+
+volumes:
+  directus-data:
+  dolibarr-data:
+  mysql-dolibarr-data:
+  invoiceshelf-data:   
+  invoiceshelf-db:     
