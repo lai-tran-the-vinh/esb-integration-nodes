@@ -6,7 +6,7 @@
     "price": 150000,
     "description": "",
     "stock": 100,
-    "img": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop"
+    "img": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRzNUTVo--ls402sawkQ84Fj1feLs-R8zdRx4T2wBq5WEeC2S4GXgXAO0hR69tzqoGNm1IeCBDslvqADNiXdDS3OnE0tV1DxiZXLVDmALlbXjM8belU4nLv-xw&usqp=CAc"
   },
   {
     "id": 2,
@@ -15,7 +15,7 @@
     "price": 350000,
     "description": "",
     "stock": 0,
-    "img": ""
+    "img": "https://yame.vn/cdn/shop/files/0024728Thumb1.jpg?v=1780852716&width=823"
   },
   {
     "id": 3,
@@ -24,6 +24,6 @@
     "price": 120000,
     "description": "",
     "stock": 0,
-    "img": ""
+    "img": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT21F7FqsCfqikFBYntUAyQEoemGPa_DPwG_t2DbRw4EA&s=10"
   }
 ]

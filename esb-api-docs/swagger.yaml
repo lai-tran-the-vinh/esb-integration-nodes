@@ -1,0 +1,247 @@
+openapi: 3.0.1
+info:
+  title: Tài liệu tích hợp trục liên thông dữ liệu
+  description: ESB điều phối dữ liệu giữa , ERP Dolibarr, InvoiceShelf và Cổng thanh toán VNPay.
+  version: 1.0.0
+servers:
+  - url: "http://localhost:8290/api/v1"
+    description: Môi trường Local Gateway
+tags:
+  - name: Sản phẩm
+    description: Các API liên quan đến truy xuất danh mục hàng hóa từ ERP.
+  - name: Đơn hàng
+    description: Khởi tạo và điều phối đơn hàng đa hệ thống.
+  - name: Thanh toán VNPay
+    description: Tích hợp ví điện tử, xử lý webhook và redirect.
+
+paths:
+  /products:
+    get:
+      tags:
+        - Sản phẩm
+      summary: Lấy danh sách sản phẩm chuẩn hóa
+      description: Truy xuất danh sách sản phẩm từ Dolibarr, gọt bỏ các trường dư thừa và chuẩn hóa cấu trúc hình ảnh.
+      responses:
+        '200':
+          description: Danh sách sản phẩm thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+  /orders:
+    post:
+      tags:
+        - Đơn hàng
+      summary: Khởi tạo đơn hàng đồng bộ (ERP & InvoiceShelf)
+      description: API nhận yêu cầu từ Frontend, xác thực Keycloak, kiểm tra khách hàng, tạo đơn trong Dolibarr, xuất hóa đơn ở InvoiceShelf và cuối cùng trả về link thanh toán VNPay.
+      security:
+        - KeycloakAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '200':
+          description: Tạo đơn hàng và link thanh toán thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderSuccessResponse'
+        '401':
+          description: Lỗi xác thực Keycloak Token
+        '500':
+          description: Lỗi từ hệ thống lõi ERP hoặc ESB
+
+  /payments/vnpay:
+    post:
+      tags:
+        - Thanh toán VNPay
+      summary: Sinh URL thanh toán VNPay (Nội bộ)
+      description: API mã hóa HMAC-SHA512 để sinh URL an toàn gửi sang cổng VNPay.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VNPayRequest'
+      responses:
+        '200':
+          description: Trả về URL thanh toán
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  payUrl:
+                    type: string
+                    example: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?..."
+
+  /vnpay/return:
+    get:
+      tags:
+        - Thanh toán VNPay
+      summary: Xử lý Redirect từ VNPay
+      description: Nhận request trả về từ trình duyệt khách hàng sau khi thanh toán, điều hướng (302) về lại trang Frontend của hệ thống.
+      parameters:
+        - in: query
+          name: vnp_TxnRef
+          schema:
+            type: string
+          required: true
+          description: Mã đơn hàng (Mã giao dịch)
+        - in: query
+          name: vnp_ResponseCode
+          schema:
+            type: string
+          required: true
+          description: Mã trạng thái thanh toán từ VNPay
+      responses:
+        '302':
+          description: Redirect về trang Frontend báo kết quả.
+
+  /webhook/vnpay:
+    get:
+      tags:
+        - Thanh toán VNPay
+      summary: VNPay IPN Webhook (Cập nhật trạng thái ngầm)
+      description: Lắng nghe tín hiệu ngầm từ VNPay (Server-to-Server) để tự động Validate đơn hàng trên ERP Dolibarr và kích hoạt trừ tồn kho.
+      parameters:
+        - in: query
+          name: vnp_TxnRef
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: vnp_ResponseCode
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Đã xác nhận trạng thái thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  RspCode:
+                    type: string
+                    example: "00"
+                  Message:
+                    type: string
+                    example: "Confirm Success"
+
+components:
+  securitySchemes:
+    KeycloakAuth:
+      type: oauth2
+      description: |
+        **Quy trình lấy Token dành cho Đối tác (Server-to-Server):**
+        
+        **Bước 1: Gọi API xin cấp Token**
+        Gửi một request `POST` đến URL cấp Token bên dưới với các tiêu chuẩn sau:
+        * **Header:** Bắt buộc phải có `Content-Type: application/x-www-form-urlencoded`.
+        * **Body (Form-data):** Truyền vào 3 thông số:
+          1. `grant_type`: Bắt buộc điền là `client_credentials`
+          2. `client_id`: (Mã định danh đối tác được cấp)
+          3. `client_secret`: (Mã bí mật được cấp)
+          
+        **Bước 2: Gắn Token vào API nghiệp vụ**
+        Hệ thống sẽ trả về một `access_token` (định dạng JWT). 
+        Đối tác mang token này gắn vào **Header** của các lệnh gọi API tiếp theo theo cú pháp:
+        `Authorization: Bearer <mã_access_token>`
+      flows:
+        clientCredentials:
+          tokenUrl: "http://localhost:8080/realms/WSO2-Realm/protocol/openid-connect/token"
+          scopes: {}
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        ref:
+          type: string
+          example: "SP001"
+        name:
+          type: string
+          example: "Áo thun basic"
+        price:
+          type: number
+          format: float
+          example: 150000
+        description:
+          type: string
+          example: "Áo thun cotton 100%"
+        stock:
+          type: integer
+          example: 100
+        img:
+          type: string
+          example: "https://images.unsplash.com/photo-12345"
+
+    OrderRequest:
+      type: object
+      properties:
+        customer_name:
+          type: string
+          example: "Nguyễn Văn A"
+        customer_email:
+          type: string
+          example: "nva@gmail.com"
+        amount:
+          type: string
+          example: "150000"
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: integer
+                example: 1
+              quantity:
+                type: integer
+                example: 2
+
+    OrderSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        message:
+          type: string
+          example: "Đã tạo đơn hàng và link thanh toán thành công."
+        dolibarr_order_id:
+          type: string
+          example: "45"
+        payment_url:
+          type: string
+          example: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?..."
+
+    VNPayRequest:
+      type: object
+      properties:
+        orderId:
+          type: string
+          example: "45"
+        amount:
+          type: string
+          example: "150000"
+        orderInfo:
+          type: string
+          example: "Thanh toan don hang 45"
+        redirectUrl:
+          type: string
+          example: "http://localhost:8290/api/v1/vnpay/return"
