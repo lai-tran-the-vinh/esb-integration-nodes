@@ -7,5 +7,7 @@ router.get('/checkout/:id', shopController.getCheckout); // Trang form mua hàng
 router.post('/checkout', shopController.postCheckout);
 router.get('/order-result', shopController.getResult);
 router.get('/cart', shopController.getCart);
+router.get('/orders/track', shopController.getTrackOrder);
+router.post('/orders/track', shopController.postTrackOrder);
 
 module.exports = router;

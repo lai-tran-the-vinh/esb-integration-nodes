@@ -116,3 +116,38 @@ exports.getResult = (req, res) => {
     const { orderId, status } = req.query;
     res.render('result.view.ejs', { orderId, status });
 };
+
+exports.getTrackOrder = (req, res) => {
+    res.render('track-order.view.ejs');
+};
+
+exports.postTrackOrder = async (req, res) => {
+    try {
+        // Lấy token từ Keycloak
+        const params = new URLSearchParams();
+        params.append('client_id', 'wso2-client');
+        params.append('client_secret', 'QWE3InQrvUYb7MTCZXL2aRhHCR894zTL');
+        params.append('grant_type', 'password');
+        params.append('username', 'testuser2');
+        params.append('password', 'test123');
+
+        const tokenRes = await axios.post(
+            'http://localhost:8080/realms/WSO2-Realm/protocol/openid-connect/token',
+            params,
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        const accessToken = tokenRes.data.access_token;
+
+        const response = await axios.post(
+            'http://localhost:8290/api/v1/orders/track',
+            req.body,
+            { headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' } }
+        );
+
+        res.json(response.data);
+    } catch (error) {
+        console.error("Lỗi tra cứu đơn hàng:", error.response ? error.response.data : error.message);
+        res.status(error.response ? error.response.status : 500).json(error.response ? error.response.data : { error: 'Không thể tra cứu đơn hàng' });
+    }
+};
