@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết hóa đơn - <%= invoiceId %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 flex justify-center items-center min-h-screen font-sans text-gray-900 p-4">
+
+    <div class="bg-white p-6 sm:p-10 rounded-xl w-full max-w-[800px] shadow-sm relative">
+        <!-- Nút quay lại -->
+        <a href="/" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-red-700 transition-colors mb-6">
+            &larr; Quay lại cửa hàng
+        </a>
+
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Hóa đơn</h1>
+                <p class="text-sm text-gray-500 mt-1">Mã HĐ: <span id="ui-invoice-number" class="font-medium">...</span></p>
+            </div>
+            <div id="ui-status-badge" class="hidden px-3 py-1 rounded-full text-xs font-semibold border bg-gray-100 text-gray-700 border-gray-200">
+                Đang xử lý
+            </div>
+        </div>
+
+        <!-- Skeleton Loading State -->
+        <div id="skeleton-ui" class="animate-pulse flex flex-col gap-6">
+            <div class="flex justify-between">
+                <div class="h-16 bg-gray-200 rounded w-1/3"></div>
+                <div class="h-16 bg-gray-200 rounded w-1/3"></div>
+            </div>
+            <div class="h-40 bg-gray-200 rounded w-full mt-4"></div>
+            <div class="flex justify-end mt-4">
+                <div class="h-20 bg-gray-200 rounded w-1/3"></div>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-ui" class="hidden flex flex-col items-center justify-center py-10 border border-red-100 bg-red-50 rounded-lg">
+            <svg class="h-10 w-10 text-red-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="text-lg font-medium text-red-800 mb-1">Lỗi khi tải hóa đơn</h3>
+            <p id="error-message" class="text-sm text-red-600 mb-5 text-center">Không thể kết nối đến hệ thống.</p>
+            <button onclick="fetchInvoice()" class="bg-red-700 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-red-800 transition-colors shadow-sm">
+                Thử lại
+            </button>
+        </div>
+
+        <!-- Content State -->
+        <div id="content-ui" class="hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+                <!-- Seller -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Thông tin bên bán</h3>
+                    <p id="ui-seller-name" class="font-medium text-gray-900"></p>
+                </div>
+                
+                <!-- Buyer -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Thông tin người mua</h3>
+                    <p id="ui-buyer-name" class="font-medium text-gray-900"></p>
+                    <p id="ui-buyer-email" class="text-sm text-gray-600 mt-1"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8 pb-8 border-b border-gray-100">
+                <!-- Dates -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Ngày lập</h3>
+                    <p id="ui-invoice-date" class="text-sm font-medium text-gray-900"></p>
+                </div>
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Hạn thanh toán</h3>
+                    <p id="ui-due-date" class="text-sm font-medium text-gray-900"></p>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="overflow-x-auto mb-8">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200 text-gray-500 font-medium">
+                            <th class="py-3 px-2 font-medium">Sản phẩm</th>
+                            <th class="py-3 px-2 font-medium text-center">Số lượng</th>
+                            <th class="py-3 px-2 font-medium text-right">Đơn giá</th>
+                            <th class="py-3 px-2 font-medium text-right">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ui-items-list" class="divide-y divide-gray-100">
+                        <!-- Items will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals -->
+            <div class="flex justify-end mb-8">
+                <div class="w-full sm:w-1/2 md:w-1/3">
+                    <div class="flex justify-between py-2 text-sm text-gray-600">
+                        <span>Tạm tính</span>
+                        <span id="ui-sub-total" class="font-medium text-gray-900"></span>
+                    </div>
+                    <div class="flex justify-between py-3 border-t border-gray-200 mt-2">
+                        <span class="font-semibold text-gray-900">Tổng cộng</span>
+                        <span id="ui-total" class="font-bold text-red-700 text-lg"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div id="ui-pdf-action" class="hidden border-t border-gray-100 pt-6 flex justify-end">
+                <a id="ui-pdf-btn" href="#" target="_blank" class="inline-flex items-center justify-center bg-red-700 text-white px-6 py-2.5 rounded-md text-sm font-medium hover:bg-red-800 transition-colors shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Xem / Tải bản in PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const invoiceId = '<%= invoiceId %>';
+        const els = {
+            skeleton: document.getElementById('skeleton-ui'),
+            error: document.getElementById('error-ui'),
+            errorMsg: document.getElementById('error-message'),
+            content: document.getElementById('content-ui'),
+            
+            invoiceNumber: document.getElementById('ui-invoice-number'),
+            statusBadge: document.getElementById('ui-status-badge'),
+            sellerName: document.getElementById('ui-seller-name'),
+            buyerName: document.getElementById('ui-buyer-name'),
+            buyerEmail: document.getElementById('ui-buyer-email'),
+            invoiceDate: document.getElementById('ui-invoice-date'),
+            dueDate: document.getElementById('ui-due-date'),
+            itemsList: document.getElementById('ui-items-list'),
+            subTotal: document.getElementById('ui-sub-total'),
+            total: document.getElementById('ui-total'),
+            pdfAction: document.getElementById('ui-pdf-action'),
+            pdfBtn: document.getElementById('ui-pdf-btn')
+        };
+
+        function setUIState(state) {
+            els.skeleton.classList.add('hidden');
+            els.error.classList.add('hidden');
+            els.content.classList.add('hidden');
+
+            if (state === 'loading') els.skeleton.classList.remove('hidden');
+            if (state === 'error') els.error.classList.remove('hidden');
+            if (state === 'success') els.content.classList.remove('hidden');
+        }
+
+        async function fetchInvoice() {
+            setUIState('loading');
+            try {
+                const response = await fetch(`/api/invoices/${invoiceId}`);
+                let data = await response.json();
+
+                if (!response.ok || data.error) {
+                    els.errorMsg.textContent = data.error || 'Lỗi khi tải thông tin hóa đơn từ hệ thống.';
+                    setUIState('error');
+                    return;
+                }
+
+                // Chắc chắn parsed JSON
+                if (typeof data === 'string') {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (e) {
+                        // Sửa lỗi chuỗi JSON từ WSO2 chứa ký tự escape không hợp lệ (Bad escaped character)
+                        // Thay thế các dấu \ không đi kèm ký tự hợp lệ thành \\
+                        let cleanData = data.replace(/\\(?![\\"/bfnrtu])/g, "\\\\");
+                        // Xóa các ký tự điều khiển (Control characters)
+                        cleanData = cleanData.replace(/[\u0000-\u001F]+/g, "");
+                        data = JSON.parse(cleanData);
+                    }
+                }
+
+                renderData(data);
+                setUIState('success');
+            } catch (error) {
+                els.errorMsg.textContent = `Lỗi kết nối mạng: ${error.message}`;
+                setUIState('error');
+            }
+        }
+
+        function renderData(data) {
+            // Data Mapping (bỏ qua roles, abilities theo yêu cầu)
+            els.invoiceNumber.textContent = data.invoice_number || invoiceId;
+            els.invoiceDate.textContent = data.formatted_invoice_date || 'N/A';
+            els.dueDate.textContent = data.formatted_due_date || 'N/A';
+
+            // Trạng thái (Badge)
+            els.statusBadge.classList.remove('hidden', 'bg-gray-100', 'text-gray-700', 'border-gray-200');
+            if (data.paid_status === 'PAID' && data.status === 'COMPLETED') {
+                els.statusBadge.textContent = 'Đã thanh toán';
+                els.statusBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold border bg-green-100 text-green-700 border-green-200';
+            } else {
+                els.statusBadge.textContent = data.status || 'Đang xử lý';
+                els.statusBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold border bg-yellow-100 text-yellow-700 border-yellow-200';
+            }
+
+            // Bên bán / Bên mua
+            els.sellerName.textContent = data.company?.name || '---';
+            els.buyerName.textContent = data.customer?.name || 'Khách hàng ẩn danh';
+            els.buyerEmail.textContent = data.customer?.email || '';
+
+            // Bảng sản phẩm
+            els.itemsList.innerHTML = '';
+            if (data.items && Array.isArray(data.items)) {
+                data.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50';
+                    tr.innerHTML = `
+                        <td class="py-3 px-2 text-gray-900">${item.name || 'Sản phẩm'}</td>
+                        <td class="py-3 px-2 text-gray-600 text-center">${item.quantity || 1}</td>
+                        <td class="py-3 px-2 text-gray-600 text-right">${item.price || 0}</td>
+                        <td class="py-3 px-2 text-gray-900 font-medium text-right">${item.total || 0}</td>
+                    `;
+                    els.itemsList.appendChild(tr);
+                });
+            } else {
+                els.itemsList.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-gray-500">Không có sản phẩm nào</td></tr>`;
+            }
+
+            // Tổng kết
+            els.subTotal.textContent = data.sub_total_display || '0';
+            els.total.textContent = data.total_display || '0';
+
+            // Action: Nút PDF
+            if (data.invoice_pdf_url && data.invoice_pdf_url !== "null") {
+                els.pdfAction.classList.remove('hidden');
+                els.pdfBtn.href = data.invoice_pdf_url;
+            } else {
+                els.pdfAction.classList.add('hidden');
+            }
+        }
+
+        // Khởi động fetch ngay khi trang tải xong
+        document.addEventListener('DOMContentLoaded', fetchInvoice);
+    </script>
+</body>
+
+</html>

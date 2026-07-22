@@ -10,4 +10,7 @@ router.get('/cart', shopController.getCart);
 router.get('/orders/track', shopController.getTrackOrder);
 router.post('/orders/track', shopController.postTrackOrder);
 
+router.get('/invoice/:id', shopController.getInvoiceView);
+router.get('/api/invoices/:id', shopController.apiGetInvoice);
+
 module.exports = router;

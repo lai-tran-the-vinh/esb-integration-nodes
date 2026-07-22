@@ -129,3 +129,19 @@ exports.postTrackOrder = async (req, res) => {
         res.status(error.response ? error.response.status : 500).json(error.response ? error.response.data : { error: 'Không thể tra cứu đơn hàng' });
     }
 };
+
+exports.getInvoiceView = (req, res) => {
+    const invoiceId = req.params.id;
+    res.render('invoice.view.ejs', { invoiceId });
+};
+
+exports.apiGetInvoice = async (req, res) => {
+    try {
+        const invoiceId = req.params.id;
+        const response = await wso2Service.callWSO2('/api/v1/invoices/' + invoiceId, 'GET');
+        res.json(response.data);
+    } catch (error) {
+        console.error("Lỗi lấy chi tiết hóa đơn từ WSO2:", error.response ? error.response.data : error.message);
+        res.status(error.response ? error.response.status : 500).json(error.response ? error.response.data : { error: 'Lỗi lấy chi tiết hóa đơn' });
+    }
+};
