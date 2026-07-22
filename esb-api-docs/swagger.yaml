@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: Tài liệu tích hợp trục liên thông dữ liệu
-  description: ESB điều phối dữ liệu giữa , ERP Dolibarr, InvoiceShelf và Cổng thanh toán VNPay.
+  title: Tài liệu tích hợp
+  description: Trục liên thông dữ liệu phục vụ chia sẻ dữ liệu đa cấu trúc.
   version: 1.0.0
 servers:
   - url: "http://localhost:8290/api/v1"
@@ -71,7 +71,7 @@ paths:
               $ref: '#/components/schemas/VNPayRequest'
       responses:
         '200':
-          description: Trả về URL thanh toán
+          description: Trả về URL thanh toán thành công
           content:
             application/json:
               schema:
@@ -82,6 +82,8 @@ paths:
                     example: "success"
                   payUrl:
                     type: string
+                    format: uri
+                    description: "Đường dẫn thanh toán VNPay chuẩn URL (tuân thủ chuẩn RFC 3986)"
                     example: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?..."
 
   /vnpay/return:
@@ -179,6 +181,7 @@ components:
         price:
           type: number
           format: float
+          description: "Đơn giá sản phẩm (tuân thủ chuẩn IEEE 754)"
           example: 150000
         description:
           type: string
@@ -188,6 +191,8 @@ components:
           example: 100
         img:
           type: string
+          format: uri
+          description: "Đường dẫn URL hình ảnh (tuân thủ chuẩn RFC 3986)"
           example: "https://images.unsplash.com/photo-12345"
 
     OrderRequest:
@@ -198,10 +203,14 @@ components:
           example: "Nguyễn Văn A"
         customer_email:
           type: string
+          format: email
+          description: "Địa chỉ thư điện tử khách hàng (tuân thủ chuẩn RFC 5322)"
           example: "nva@gmail.com"
         amount:
-          type: string
-          example: "150000"
+          type: number
+          format: float
+          description: "Tổng tiền đơn hàng (tuân thủ chuẩn IEEE 754)"
+          example: 150000
         products:
           type: array
           items:
@@ -228,6 +237,8 @@ components:
           example: "45"
         payment_url:
           type: string
+          format: uri
+          description: "Đường dẫn thanh toán VNPay chuẩn URL (tuân thủ chuẩn RFC 3986)"
           example: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?..."
 
     VNPayRequest:
@@ -237,11 +248,15 @@ components:
           type: string
           example: "45"
         amount:
-          type: string
-          example: "150000"
+          type: number
+          format: float
+          description: "Số tiền cần thanh toán (tuân thủ chuẩn IEEE 754)"
+          example: 150000
         orderInfo:
           type: string
           example: "Thanh toan don hang 45"
         redirectUrl:
           type: string
+          format: uri
+          description: "URL điều hướng sau thanh toán (tuân thủ chuẩn RFC 3986)"
           example: "http://localhost:8290/api/v1/vnpay/return"
