@@ -1,5 +1,27 @@
 services:
-  # 1. Keycloak - Xác thực tập trung
+  # 0. Dịch vụ tự động nạp backup (Chạy xong tự tắt)
+  data-initializer:
+    image: alpine:latest
+    container_name: data-initializer
+    volumes:
+      - ./:/backup
+      - dolibarr-data:/data/dolibarr
+      - mysql-dolibarr-data:/data/mysql
+      - invoiceshelf-data:/data/invoiceshelf-storage
+      - invoiceshelf-db:/data/invoiceshelf-db
+      - keycloak-data:/data/keycloak
+    command: >
+      sh -c "
+        echo 'Đang nạp dữ liệu backup...' &&
+        tar -xzf /backup/dolibarr-backup.tar.gz -C /data/dolibarr 2>/dev/null || true &&
+        tar -xzf /backup/mysql-dolibarr-backup.tar.gz -C /data/mysql 2>/dev/null || true &&
+        tar -xzf /backup/invoiceshelf-storage-backup.tar.gz -C /data/invoiceshelf-storage 2>/dev/null || true &&
+        tar -xzf /backup/invoiceshelf-db-backup.tar.gz -C /data/invoiceshelf-db 2>/dev/null || true &&
+        tar -xzf /backup/keycloak-db-backup.tar.gz -C /data/keycloak 2>/dev/null || true &&
+        echo 'Nạp dữ liệu thành công!'
+      "
+
+  # 1. Keycloak
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
@@ -9,28 +31,15 @@ services:
     ports:
       - "8080:8080"
     command: start-dev
-    networks:
-      - esb-network
-
-  # 2. Directus - Kênh bán hàng (JSON)
-  directus:
-    image: directus/directus:latest
-    container_name: directus
-    environment:
-      KEY: 'random-string-change-this-123456'
-      SECRET: 'another-random-string-abc'
-      ADMIN_EMAIL: 'admin@example.com'
-      ADMIN_PASSWORD: 'admin123'
-      DB_CLIENT: 'sqlite3'
-      DB_FILENAME: '/directus/database/data.db'
-    ports:
-      - "1337:8055"
     volumes:
-      - directus-data:/directus/database
+      - keycloak-data:/opt/keycloak/data
     networks:
       - esb-network
+    depends_on:
+      data-initializer:
+        condition: service_completed_successfully
 
-  # 3. Dolibarr - ERP (XML)
+  # 2. Dolibarr - ERP
   dolibarr:
     image: dolibarr/dolibarr:latest
     container_name: dolibarr
@@ -45,6 +54,8 @@ services:
     ports:
       - "8000:80"
     depends_on:
+      data-initializer:
+        condition: service_completed_successfully
       mysql-dolibarr:
         condition: service_healthy
     volumes:
@@ -62,12 +73,15 @@ services:
       - mysql-dolibarr-data:/var/lib/mysql
     networks:
       - esb-network
+    depends_on:
+      data-initializer:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       timeout: 20s
       retries: 10
 
-  # 4. Invoice Ninja - Hóa đơn (JSON)
+  # 3. InvoiceShelf - Hóa đơn
   invoiceshelf:
     image: invoiceshelf/invoiceshelf:latest
     container_name: invoiceshelf
@@ -75,7 +89,7 @@ services:
       APP_URL: http://localhost:8002
       APP_DEBUG: "true"
       APP_ENV: local
-      APP_KEY:   # Để trống, container sẽ tự gen
+      APP_KEY: ""
       DB_CONNECTION: sqlite
       DB_DATABASE: /var/www/html/database/database.sqlite
       MAIL_MAILER: log
@@ -86,14 +100,57 @@ services:
       - invoiceshelf-db:/var/www/html/database
     networks:
       - esb-network
+    depends_on:
+      data-initializer:
+        condition: service_completed_successfully
+
+  # 4. WSO2 ESB
+  wso2mi:
+    image: wso2/wso2mi:4.2.0
+    container_name: wso2mi
+    ports:
+      - "8290:8290"
+      - "8243:8243"
+    environment:
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - DOLIBARR_SERVER_URL=http://dolibarr:80
+      - INVOICESHELF_SERVER_URL=http://invoiceshelf:8080
+    volumes:
+      - ./wso2-artifacts:/home/wso2carbon/wso2mi-4.2.0/repository/deployment/server/carbonapps
+    networks:
+      - esb-network
+    depends_on:
+      - keycloak
+      - dolibarr
+      - invoiceshelf
+
+  # 5. Giao diện bán hàng
+  web-shop:
+    build:
+      context: ./web-shop
+      dockerfile: Dockerfile
+    container_name: web-shop
+    ports:
+      - "3000:3000"
+    environment:
+      - WSO2_BASE_URL=http://wso2mi:8290
+      # ĐÃ SỬA LỖI LOCALHOST Ở ĐÂY:
+      - KEYCLOAK_TOKEN_URL=http://keycloak:8080/realms/WSO2-Realm/protocol/openid-connect/token
+      - KEYCLOAK_CLIENT_ID=wso2-client
+      - KEYCLOAK_CLIENT_SECRET=QWE3InQrvUYb7MTCZXL2aRhHCR894zTL
+    networks:
+      - esb-network
+    depends_on:
+      - wso2mi
 
 networks:
   esb-network:
     driver: bridge
 
+# ĐÃ BỔ SUNG KEYCLOAK-DATA:
 volumes:
-  directus-data:
   dolibarr-data:
   mysql-dolibarr-data:
   invoiceshelf-data:   
   invoiceshelf-db:     
+  keycloak-data:
