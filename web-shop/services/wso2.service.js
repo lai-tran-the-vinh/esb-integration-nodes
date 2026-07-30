@@ -1,9 +1,9 @@
 const axios = require('axios');
 
-const KEYCLOAK_TOKEN_URL = process.env.KEYCLOAK_TOKEN_URL || 'http://localhost:8080/realms/WSO2-Realm/protocol/openid-connect/token';
-const CLIENT_ID = process.env.CLIENT_ID || 'wso2-client';
-const CLIENT_SECRET = process.env.CLIENT_SECRET || 'QWE3InQrvUYb7MTCZXL2aRhHCR894zTL';
-const WSO2_BASE_URL = process.env.WSO2_BASE_URL || 'http://localhost:8290';
+const KEYCLOAK_TOKEN_URL = process.env.KEYCLOAK_TOKEN_URL;
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const WSO2_BASE_URL = process.env.WSO2_BASE_URL;
 
 let cachedToken = null;
 let tokenExpiryTime = 0;
