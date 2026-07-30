@@ -138,8 +138,8 @@ services:
     environment:
       - WSO2_BASE_URL=http://wso2mi:8290
       - KEYCLOAK_TOKEN_URL=http://keycloak:8080/realms/WSO2-Realm/protocol/openid-connect/token
-      - KEYCLOAK_CLIENT_ID=wso2-client
-      - KEYCLOAK_CLIENT_SECRET=J3lsZQohEvnutdUpmbk2mqbcXiELtzIm
+      - CLIENT_ID=wso2-client
+      - CLIENT_SECRET=J3lsZQohEvnutdUpmbk2mqbcXiELtzIm
     networks:
       - esb-network
     depends_on:
