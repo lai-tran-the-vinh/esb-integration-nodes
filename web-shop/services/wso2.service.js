@@ -5,6 +5,11 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const WSO2_BASE_URL = process.env.WSO2_BASE_URL;
 
+console.log('KEYCLOAK_TOKEN_URL:', KEYCLOAK_TOKEN_URL);
+console.log('CLIENT_ID:', CLIENT_ID);
+console.log('WSO2_BASE_URL:', WSO2_BASE_URL);
+console.log('CLIENT_SECRET:', CLIENT_SECRET);
+
 let cachedToken = null;
 let tokenExpiryTime = 0;
 
