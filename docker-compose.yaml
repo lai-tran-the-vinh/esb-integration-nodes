@@ -89,7 +89,7 @@ services:
       APP_URL: http://localhost:8002
       APP_DEBUG: "true"
       APP_ENV: local
-      APP_KEY: ""
+      APP_KEY: "base64:kgk/4DW1vEVy7aEvet5FPp5un6PIGe/so8H0mvoUtW0="
       DB_CONNECTION: sqlite
       DB_DATABASE: /var/www/html/database/database.sqlite
       MAIL_MAILER: log
@@ -112,9 +112,11 @@ services:
       - "8290:8290"
       - "8243:8243"
     environment:
-      - KEYCLOAK_SERVER_URL=http://keycloak:8080
-      - DOLIBARR_SERVER_URL=http://dolibarr:80
-      - INVOICESHELF_SERVER_URL=http://invoiceshelf:8080
+      - DOLIBARR_TOKEN=59352f3754484dc66e9fae32e834ce40c2ea218e
+      - INVOICE_SHELF_TOKEN=1|sZQEMzN9q6f13YyYIEx5HGSZ5UoTuUTPhWuwplP96a08269c
+      - KEYCLOAK_CLIENT_SECRET=QWE3InQrvUYb7MTCZXL2aRhHCR894zTL
+      - VNPAY_HASH_SECRET=14BD91DNB0D4YWYSQNRB5EFID0W0FOL1
+      - VNPAY_TMN_CODE=ZERI53G9
     volumes:
       - ./wso2-artifacts:/home/wso2carbon/wso2mi-4.2.0/repository/deployment/server/carbonapps
     networks:
@@ -134,7 +136,6 @@ services:
       - "3000:3000"
     environment:
       - WSO2_BASE_URL=http://wso2mi:8290
-      # ĐÃ SỬA LỖI LOCALHOST Ở ĐÂY:
       - KEYCLOAK_TOKEN_URL=http://keycloak:8080/realms/WSO2-Realm/protocol/openid-connect/token
       - KEYCLOAK_CLIENT_ID=wso2-client
       - KEYCLOAK_CLIENT_SECRET=QWE3InQrvUYb7MTCZXL2aRhHCR894zTL
@@ -147,7 +148,6 @@ networks:
   esb-network:
     driver: bridge
 
-# ĐÃ BỔ SUNG KEYCLOAK-DATA:
 volumes:
   dolibarr-data:
   mysql-dolibarr-data:
