@@ -115,7 +115,7 @@ services:
     environment:
       - DOLIBARR_BASE_URL=http://dolibarr:80
       - DOLIBARR_TOKEN=59352f3754484dc66e9fae32e834ce40c2ea218e
-      - EXPRESS_APP_BASE_URL=http://web-shop:3000
+      - EXPRESS_APP_BASE_URL=http://localhost:3000
       - INVOICE_SHELF_BASE_URL=http://invoiceshelf:8080
       - INVOICE_SHELF_PASSWORD=12345678
       - INVOICE_SHELF_TOKEN=1|sZQEMzN9q6f13YyYIEx5HGSZ5UoTuUTPhWuwplP96a08269c
@@ -125,7 +125,7 @@ services:
       # - LAKE_HOUSE_BASE_URL=http://localhost:4000
       - VNPAY_HASH_SECRET=14BD91DNB0D4YWYSQNRB5EFID0W0FOL1
       - VNPAY_TMN_CODE=ZERI53G9
-      - WSO2_BASE_URL=http://wso2mi:8290
+      - WSO2_BASE_URL=http://localhost:8290
     volumes:
       - ./wso2-artifacts:/home/wso2carbon/wso2mi-4.2.0/repository/deployment/server/carbonapps
     networks:
