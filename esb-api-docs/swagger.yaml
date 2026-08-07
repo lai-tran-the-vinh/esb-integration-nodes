@@ -11,6 +11,8 @@ tags:
     description: Các API liên quan đến truy xuất danh mục hàng hóa từ ERP.
   - name: Đơn hàng
     description: Khởi tạo và điều phối đơn hàng đa hệ thống.
+  - name: Hóa đơn
+    description: Truy xuất và hiển thị dữ liệu hóa đơn điện tử.
   - name: Thanh toán VNPay
     description: Tích hợp ví điện tử, xử lý webhook và redirect.
 
@@ -56,6 +58,61 @@ paths:
           description: Lỗi xác thực Keycloak Token
         '500':
           description: Lỗi từ hệ thống lõi ERP hoặc ESB
+
+  /orders/track:
+    post:
+      tags:
+        - Đơn hàng
+      summary: Tra cứu trạng thái đơn hàng
+      description: Kiểm tra trạng thái thanh toán của đơn hàng qua ID và xác thực bằng Email. Trả về thông tin đơn, trạng thái thanh toán, link thanh toán (nếu chưa thanh toán) và số hóa đơn.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackOrderRequest'
+      responses:
+        '200':
+          description: Tra cứu thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackOrderResponse'
+        '400':
+          description: Dữ liệu đầu vào không hợp lệ (VD vắng tham số, email sai chuẩn RFC 5322).
+        '403':
+          description: Email tra cứu không khớp với thông tin người đặt hàng gốc.
+        '404':
+          description: Mã đơn hàng không tồn tại trên hệ thống.
+        '500':
+          description: Lỗi máy chủ nội bộ.
+
+  /invoices/{orderId}:
+    get:
+      tags:
+        - Hóa đơn
+      summary: Xem chi tiết hóa đơn
+      description: Dựa trên mã đơn hàng ERP (orderId), đối soát để lấy mã hóa đơn tương ứng, sau đó truy vấn thông tin chi tiết và link PDF từ hệ thống InvoiceShelf.
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+          description: ID đơn hàng trên hệ thống Dolibarr ERP
+      responses:
+        '200':
+          description: Lấy chi tiết hóa đơn thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetailResponse'
+        '404':
+          description: Đơn hàng không tồn tại hoặc hóa đơn chưa được khởi tạo.
+        '500':
+          description: Lỗi hệ thống nội bộ nghiêm trọng.
+        '503':
+          description: Dịch vụ hóa đơn InvoiceShelf đang tạm ngắt kết nối.
 
   /payments/vnpay:
     post:
@@ -260,3 +317,92 @@ components:
           format: uri
           description: "URL điều hướng sau thanh toán (tuân thủ chuẩn RFC 3986)"
           example: "http://localhost:8290/api/v1/vnpay/return"
+          
+    TrackOrderRequest:
+      type: object
+      required:
+        - order_id
+        - email
+      properties:
+        order_id:
+          type: string
+          description: "Mã định danh đơn hàng trên hệ thống"
+          example: "45"
+        email:
+          type: string
+          format: email
+          description: "Email xác thực để bảo mật thông tin truy xuất"
+          example: "nva@gmail.com"
+
+    TrackOrderResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        order:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "45"
+            ref:
+              type: string
+              example: "CO2408-0001"
+            date:
+              type: string
+              description: "Ngày tạo đơn dạng Unix Timestamp"
+              example: "1719543200"
+            total:
+              type: string
+              description: "Tổng tiền dạng số nguyên"
+              example: "150000"
+            status_label:
+              type: string
+              example: "Chưa thanh toán"
+            lines:
+              type: array
+              description: "Danh sách sản phẩm trong đơn"
+              items:
+                type: object
+        actions:
+          type: object
+          properties:
+            can_pay:
+              type: boolean
+              description: "Cờ cho phép tiếp tục thanh toán"
+              example: true
+            pay_url:
+              type: string
+              format: uri
+              description: "Link thanh toán (trống nếu đã thanh toán)"
+              example: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?..."
+            invoice_number:
+              type: string
+              description: "Số hóa đơn điện tử (trống nếu chưa thanh toán)"
+              example: ""
+
+    InvoiceDetailResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "ID Hóa đơn trên InvoiceShelf"
+          example: 21
+        invoice_number:
+          type: string
+          description: "Số hiệu hóa đơn đối soát"
+          example: "INV-DL-45"
+        sub_total_display:
+          type: string
+          description: "Tiền hàng hiển thị chuẩn VNĐ"
+          example: "150.000 đ"
+        total_display:
+          type: string
+          description: "Tổng thanh toán hiển thị chuẩn VNĐ"
+          example: "150.000 đ"
+        invoice_pdf_url:
+          type: string
+          format: uri
+          description: "Đường dẫn tải file PDF hóa đơn đã được mapping cổng mạng"
+          example: "http://localhost:8002/invoices/pdf/xxxxxx"
