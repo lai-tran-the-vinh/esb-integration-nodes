@@ -47,6 +47,20 @@
                     class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
             </div>
 
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ giao hàng</label>
+                <div class="flex flex-col gap-3">
+                    <select id="provinceSelect" required class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
+                        <option value="">Chọn Tỉnh/Thành phố</option>
+                    </select>
+                    <select id="communeSelect" required class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
+                        <option value="">Chọn Phường/Xã</option>
+                    </select>
+                    <input type="text" id="streetInput" required placeholder="Số nhà/Tên đường" class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-sm transition-colors">
+                    <input type="hidden" name="address" id="full_address">
+                </div>
+            </div>
+
             <button type="submit" class="w-full bg-red-700 text-white py-3 rounded-md text-sm font-medium hover:bg-red-800 transition-colors mt-2">
                 Thanh toán VNPAY ngay
             </button>
@@ -57,6 +71,62 @@
         </form>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const provinceSelect = document.getElementById('provinceSelect');
+            const communeSelect = document.getElementById('communeSelect');
+            const streetInput = document.getElementById('streetInput');
+            const fullAddressInput = document.getElementById('full_address');
+
+            axios.get('https://production.cas.so/address-kit/2025-07-01/provinces')
+                .then(response => {
+                    const provinces = response.data.provinces;
+                    provinces.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.code;
+                        option.textContent = p.name;
+                        provinceSelect.appendChild(option);
+                    });
+                })
+                .catch(err => console.error('Lỗi khi lấy danh sách tỉnh/thành:', err));
+
+            provinceSelect.addEventListener('change', (e) => {
+                const provinceCode = e.target.value;
+                communeSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+                if (provinceCode) {
+                    axios.get(`https://production.cas.so/address-kit/2025-07-01/provinces/${provinceCode}/communes`)
+                        .then(response => {
+                            const communes = response.data.communes;
+                            communes.forEach(c => {
+                                const option = document.createElement('option');
+                                option.value = c.code;
+                                option.textContent = c.name;
+                                communeSelect.appendChild(option);
+                            });
+                        })
+                        .catch(err => console.error('Lỗi khi lấy danh sách phường/xã:', err));
+                }
+                updateFullAddress();
+            });
+
+            const updateFullAddress = () => {
+                const provinceName = provinceSelect.options[provinceSelect.selectedIndex]?.text || '';
+                const communeName = communeSelect.options[communeSelect.selectedIndex]?.text || '';
+                const streetName = streetInput.value.trim();
+
+                const parts = [];
+                if (streetName) parts.push(streetName);
+                if (communeSelect.value) parts.push(communeName);
+                if (provinceSelect.value) parts.push(provinceName);
+
+                fullAddressInput.value = parts.join(', ');
+            };
+
+            communeSelect.addEventListener('change', updateFullAddress);
+            streetInput.addEventListener('input', updateFullAddress);
+        });
+    </script>
 </body>
 
 </html>

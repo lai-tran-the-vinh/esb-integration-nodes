@@ -86,9 +86,22 @@ exports.postCheckout = async (req, res) => {
         const quantity = parseInt(req.body.quantity || 1);
         const totalAmount = product.price * quantity;
 
+        if (!req.body.customer_name || req.body.customer_name.trim() === '') {
+            return res.status(400).send("Vui lòng nhập họ tên khách hàng!");
+        }
+
+        if (!req.body.customer_email || req.body.customer_email.trim() === '') {
+            return res.status(400).send("Vui lòng nhập email khách hàng!");
+        }
+
+        if (!req.body.address || req.body.address.trim() === '') {
+            return res.status(400).send("Vui lòng nhập đầy đủ địa chỉ giao hàng!");
+        }
+
         const payload = {
             customer_name: req.body.customer_name,
             customer_email: req.body.customer_email,
+            shipping_address: req.body.address,
             status: "pending",
             amount: totalAmount.toString(),
             products: [{ product_id: product.id, quantity }]
