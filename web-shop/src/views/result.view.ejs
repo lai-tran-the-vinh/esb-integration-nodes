@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
-    <title>Thanh toán thành công</title>
+    <title>
+        <%= status==='success' ? 'Thanh toán thành công' : 'Thanh toán thất bại' %>
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -11,22 +14,47 @@
         }
     </script>
 </head>
+
 <body class="bg-gray-100 flex justify-center items-center min-h-screen font-sans text-gray-900 p-4">
     <div class="bg-white p-8 sm:p-10 rounded-xl text-center w-full max-w-[500px]">
-        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-            <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-        </div>
-        <h1 class="text-2xl font-semibold text-gray-900 mb-4 tracking-tight">Thanh toán thành công!</h1>
-        <div class="bg-gray-50 rounded-lg p-6 mb-8">
-            <p class="text-gray-600 text-sm mb-2">Mã đơn hàng Dolibarr của bạn là:</p>
-            <p class="text-2xl font-bold text-red-700 mb-4">#<%= orderId %></p>
-            <p class="text-sm text-gray-500">Hóa đơn điện tử đã được tự động tạo và lưu trữ an toàn trên InvoiceShelf.</p>
-        </div>
-        <a href="/" class="block w-full bg-red-700 text-white px-4 py-3 rounded-md text-sm font-medium hover:bg-red-800 transition-colors">
-            Tiếp tục mua sắm
-        </a>
+
+        <% if (status==='success' ) { %>
+            <!-- GIAO DIỆN THÀNH CÔNG -->
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-semibold text-gray-900 mb-4 tracking-tight">Thanh toán thành công!</h1>
+            <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                <p class="text-gray-600 text-sm mb-2">Mã đơn hàng Dolibarr của bạn là:</p>
+                <p class="text-2xl font-bold text-red-700 mb-4">#<%= orderId %>
+                </p>
+                <p class="text-sm text-gray-500">Hóa đơn điện tử đã được tự động tạo và lưu trữ an toàn trên
+                    InvoiceShelf.</p>
+            </div>
+            <% } else { %>
+                <!-- GIAO DIỆN THẤT BẠI -->
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+                    <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-semibold text-gray-900 mb-4 tracking-tight">Thanh toán thất bại</h1>
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <p class="text-gray-600 text-sm mb-2">Giao dịch cho đơn hàng <span class="font-bold">#<%= orderId %>
+                                </span> đã bị hủy hoặc xảy ra lỗi.</p>
+                    <p class="text-sm text-gray-500">Hệ thống đã tự động ghi nhận trạng thái và hủy đơn hàng. Vui lòng
+                        thử đặt lại hàng.</p>
+                </div>
+                <% } %>
+
+                    <a href="/"
+                        class="block w-full bg-red-700 text-white px-4 py-3 rounded-md text-sm font-medium hover:bg-red-800 transition-colors">
+                        Về trang chủ
+                    </a>
     </div>
 </body>
+
 </html>
